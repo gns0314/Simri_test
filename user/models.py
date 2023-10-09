@@ -41,9 +41,14 @@ class User(AbstractUser):
     is_active = models.BooleanField(default=True)
     last_login = models.DateTimeField(null=True, blank=True)
     date_joined = models.DateTimeField(auto_now_add=True)
-
+    
     USERNAME_FIELD = 'email'
     EMAIL_FIELD ='email'
     REQUIRED_FIELDS = []
 
     objects = UserManager()
+
+
+class RefreshToken(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='refresh_token')
+    token = models.CharField(max_length=255)
