@@ -3,15 +3,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.permissions import IsAuthenticated
 
 from .serializers import SigninSerializer
 
 from .models import RefreshToken 
-
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
-
 
 
 # 회원가입
@@ -44,7 +40,17 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         refresh_token, _ = RefreshToken.objects.get_or_create(user=self.user)
         refresh_token.token = str(refresh)
         refresh_token.save()
-        return data
+        return {'RefreshToken': data['refresh'],'AccessToken': data['access']}
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
+
+
+# 로그아웃
+class LogoutView(APIView):
+    permissions_classes = [IsAuthenticated]
+
+    def post(self, request):
+        request.user.refresh_token.delete()
+
+        return Response({'message': '로그아웃 성공'}, status=status.HTTP_200_OK)

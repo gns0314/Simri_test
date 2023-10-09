@@ -133,6 +133,9 @@ AUTH_USER_MODEL = 'user.User'
 
 # REST_FRAMEWORK
 REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES' : [
+         'rest_framework.permissions.IsAuthenticated',
+    ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
@@ -140,7 +143,7 @@ REST_FRAMEWORK = {
 
 #JWT
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,

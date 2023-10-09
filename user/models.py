@@ -41,7 +41,7 @@ class User(AbstractUser):
     is_active = models.BooleanField(default=True)
     last_login = models.DateTimeField(null=True, blank=True)
     date_joined = models.DateTimeField(auto_now_add=True)
-    
+
     USERNAME_FIELD = 'email'
     EMAIL_FIELD ='email'
     REQUIRED_FIELDS = []
