@@ -5,7 +5,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import IsAuthenticated
 
-from .serializers import SigninSerializer
+from .serializers import SigninSerializer, ChangePasswordSerializer, ProfileUpdateSerializer
 
 from .models import RefreshToken 
 
@@ -42,6 +42,8 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         refresh_token.save()
         return {'RefreshToken': data['refresh'],'AccessToken': data['access']}
 
+
+# 로그인
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
 
@@ -54,3 +56,58 @@ class LogoutView(APIView):
         request.user.refresh_token.delete()
 
         return Response({'message': '로그아웃 성공'}, status=status.HTTP_200_OK)
+    
+
+# 비밀번호 변경
+class ChangePwView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data)
+
+        if serializer.is_valid():
+            user = request.user
+            current_password = serializer.validated_data.get('current_password')
+            new_password = serializer.validated_data.get('new_password')
+
+            if user.check_password(current_password):
+                user.set_password(new_password)
+                user.save()
+                return Response({'message': '비밀번호 변경 성공','status':200 },status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    'error_code': status.HTTP_400_BAD_REQUEST,
+                    'error': '현재 암호가 틀립니다.'
+                    },
+                    status=status.HTTP_400_BAD_REQUEST)
+            
+        return Response({
+                        'error_code': status.HTTP_400_BAD_REQUEST,
+                        'error': serializer.errors['new_password']
+                        }, 
+                        status=status.HTTP_400_BAD_REQUEST)
+    
+
+# 회원 정보 수정
+class ProfileUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        serializer = ProfileUpdateSerializer(user)
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def post(self, request):
+        user = request.user
+        serializer = ProfileUpdateSerializer(user, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response({
+            'error_code': status.HTTP_400_BAD_REQUEST,
+            'error': serializer.errors
+            }, 
+            status=status.HTTP_400_BAD_REQUEST)

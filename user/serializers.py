@@ -5,6 +5,7 @@ from rest_framework import serializers
 from .models import User
 
 
+# 회원가입
 class SigninSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -15,3 +16,21 @@ class SigninSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
         return user
+    
+
+# 비밀번호 변경
+class ChangePasswordSerializer(serializers.Serializer):
+    current_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+    
+    def validate_new_password(self, value):
+        validate_password(value)
+        return value
+
+
+# 회원 정보 수정
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ['nickname']  
