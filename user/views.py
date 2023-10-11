@@ -5,7 +5,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import IsAuthenticated
 
-from .serializers import SigninSerializer, ChangePasswordSerializer, ProfileUpdateSerializer
+from .serializers import SigninSerializer, ChangePasswordSerializer, ProfileUpdateSerializer, DeleteUserSerializer
 
 from .models import RefreshToken 
 
@@ -111,3 +111,35 @@ class ProfileUpdateView(APIView):
             'error': serializer.errors
             }, 
             status=status.HTTP_400_BAD_REQUEST)
+
+
+# 회원탈퇴
+class DeleteUserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        serializer = DeleteUserSerializer(data=request.data)
+
+        if serializer.is_valid():
+            password = serializer.validated_data.get('password')
+
+            if user.check_password(password):
+                try:
+                    RefreshToken.objects.get(user_id=user.id).delete()
+                    user.is_active = False
+                    user.save()
+                    return Response({'message':'회원 탈퇴 성공','status':status.HTTP_200_OK}, status=status.HTTP_200_OK)
+                except RefreshToken.DoesNotExist:
+                    return Response({
+                        'error_code': status.HTTP_404_NOT_FOUND,
+                        'error': '유효하지 않는 유저정보 입니다.'
+                        },
+                        status=status.HTTP_404_NOT_FOUND)
+            
+            return Response({
+                'error_code': status.HTTP_401_UNAUTHORIZED,
+                'error': '유효하지 않는 유저정보 입니다.'
+                },
+                status=status.HTTP_401_UNAUTHORIZED)
+            

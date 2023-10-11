@@ -34,3 +34,8 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['nickname']  
+
+
+# 회원 탈퇴
+class DeleteUserSerializer(serializers.Serializer):
+     password = serializers.CharField(required=True, write_only=True)
