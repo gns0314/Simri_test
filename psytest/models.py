@@ -4,9 +4,11 @@ from user.models import User
 
 
 class PsyTest(models.Model):
-    writer = models.ForeignKey(User, on_delete=models.CASCADE)
+    writer = models.ForeignKey(User, on_delete=models.CASCADE, null=True, default=None)
     title = models.CharField(max_length=30)
-    hit = models.PositiveIntegerField()
+    # hit = models.PositiveIntegerField()
+
+    
 
 
 class Follow(models.Model):
@@ -27,6 +29,5 @@ class Answer(models.Model):
 
 class Result(models.Model):
     psytest = models.ForeignKey(PsyTest, on_delete=models.CASCADE, related_name='results')
-    answer = models.ForeignKey(Answer, on_delete=models.CASCADE, related_name='results')
     result_text = models.CharField(max_length=100)
     result_img = models.ImageField(upload_to='images/')
